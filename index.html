@@ -7,6 +7,9 @@
     <meta name="theme-color" content="#064e3b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23064e3b' width='100' height='100' rx='20'/%3E%3Ctext x='50' y='70' text-anchor='middle' font-size='60' fill='white' font-family='Arial,sans-serif' font-weight='bold'%3ED%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%23064e3b' width='192' height='192' rx='48'/%3E%3Ctext x='96' y='140' text-anchor='middle' font-size='120' fill='white' font-family='Arial,sans-serif' font-weight='bold'%3ED%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -655,6 +658,47 @@
         });
     } else {
         navigate('new');
+    }
+    
+    // ===== PWA INSTALLATION =====
+    let deferredPrompt;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Mostrar banner de instalación después de 3 segundos
+        setTimeout(() => {
+            if (deferredPrompt) {
+                Modal.show(
+                    '📱 Instalar App',
+                    '¿Quieres instalar Gestor de Dietas Pro en tu dispositivo? Funcionará como una app nativa.',
+                    'confirm',
+                    (install) => {
+                        if (install && deferredPrompt) {
+                            deferredPrompt.prompt();
+                            deferredPrompt.userChoice.then((choiceResult) => {
+                                deferredPrompt = null;
+                            });
+                        }
+                    }
+                );
+            }
+        }, 3000);
+    });
+    
+    // Service Worker para funcionamiento offline
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').then(
+                (registration) => {
+                    console.log('Service Worker registrado:', registration.scope);
+                },
+                (error) => {
+                    console.log('Error al registrar Service Worker:', error);
+                }
+            );
+        });
     }
     </script>
 </body>
