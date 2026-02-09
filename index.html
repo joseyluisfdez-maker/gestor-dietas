@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestor de Dietas Pro</title>
+    <meta name="theme-color" content="#064e3b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafc; --card: #ffffff; --pri: #064e3b; --acc: #10b981;
+            --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --err: #ef4444;
+        }
+        body.dark {
+            --bg: #0f172a; --card: #1e293b; --pri: #34d399; --acc: #10b981;
+            --text: #f1f5f9; --text-light: #94a3b8; --border: #334155;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg); color: var(--text); padding: 20px;
+            display: flex; justify-content: center; min-height: 100vh;
+            transition: background 0.3s; -webkit-tap-highlight-color: transparent;
+        }
+        .app { width: 100%; max-width: 1400px; padding-bottom: 80px; }
+        h1 {
+            font-size: 19px; color: var(--pri); border-left: 4px solid var(--acc);
+            padding-left: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+        }
+        .user-name { color: var(--acc); font-weight: 400; }
+        nav {
+            display: flex; gap: 8px; margin-bottom: 20px; background: var(--border);
+            padding: 5px; border-radius: 14px; overflow-x: auto;
+        }
+        nav::-webkit-scrollbar { display: none; }
+        body.dark nav { background: var(--border); }
+        nav button {
+            flex: 1; min-width: 85px; padding: 12px 8px; border: 0; border-radius: 10px;
+            background: transparent; cursor: pointer; font-weight: 600; font-size: 12px;
+            color: var(--text-light); white-space: nowrap; transition: all 0.2s;
+        }
+        nav button:hover { background: rgba(16, 185, 129, 0.1); }
+        nav button.active { background: var(--card); color: var(--acc); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card {
+            background: var(--card); border-radius: 20px; padding: 20px;
+            border: 1px solid var(--border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            min-height: 550px; overflow-x: auto; animation: fadeIn 0.25s;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .field { margin-bottom: 20px; }
+        .field label {
+            font-size: 11px; font-weight: 700; color: var(--text-light);
+            text-transform: uppercase; display: block; margin-bottom: 8px; letter-spacing: 0.5px;
+        }
+        input, select {
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border);
+            font-size: 15px; background: var(--bg); color: var(--text); transition: all 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: var(--acc); outline: none;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        .check-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 18px 0; border-bottom: 1px solid var(--border);
+            cursor: pointer; user-select: none; transition: background 0.2s;
+        }
+        .check-item:hover { background: rgba(16, 185, 129, 0.03); }
+        .check-info { display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
+        .check-info b { font-size: 15px; font-weight: 600; color: var(--text); }
+        .check-info span { font-size: 13px; color: var(--text-light); }
+        input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--acc); cursor: pointer; }
+        .btn {
+            padding: 12px 24px; border: 0; border-radius: 8px; font-weight: 700;
+            font-size: 14px; cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary {
+            width: 100%; padding: 20px; background: var(--pri); color: white;
+            border-radius: 14px; font-size: 16px; margin-top: 20px;
+        }
+        .btn-primary:hover { background: #053524; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-group { display: flex; gap: 6px; justify-content: center; flex-wrap: nowrap; }
+        .btn-sm {
+            min-width: 85px; padding: 10px 8px; border: 1px solid var(--border);
+            background: var(--card); color: var(--text); font-size: 9px; white-space: nowrap;
+        }
+        .btn-sm:hover:not(:disabled) { background: var(--bg); border-color: var(--acc); }
+        .btn-sm.active { background: var(--acc) !important; color: white !important; border-color: var(--acc) !important; }
+        .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-danger { color: var(--err); border-color: var(--err); }
+        .btn-danger:hover { background: var(--err); color: white; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        th {
+            font-size: 13px; text-transform: uppercase; color: var(--text-light);
+            padding: 12px; text-align: center; border-bottom: 2px solid var(--acc);
+            font-weight: 700; letter-spacing: 0.5px;
+        }
+        th.left { text-align: left; }
+        td {
+            padding: 18px 15px; background: var(--card); border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border); font-size: 14px;
+            vertical-align: middle; text-align: center;
+        }
+        td.left { text-align: left; }
+        td:first-child { border-left: 1px solid var(--border); border-radius: 12px 0 0 12px; }
+        td:last-child { border-right: 1px solid var(--border); border-radius: 0 12px 12px 0; }
+        .cell-title { font-weight: 700; margin-bottom: 4px; }
+        .cell-sub { font-size: 12px; color: var(--text-light); }
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content {
+            background: var(--card); padding: 30px; border-radius: 20px;
+            max-width: 400px; width: 90%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.25s;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .modal h2 { margin-bottom: 15px; color: var(--pri); font-size: 20px; font-weight: 700; }
+        .modal p { margin-bottom: 20px; color: var(--text); line-height: 1.5; }
+        .modal input {
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border);
+            font-size: 15px; background: var(--bg); color: var(--text); margin-bottom: 20px;
+        }
+        .modal-buttons { display: flex; gap: 10px; }
+        .modal-buttons .btn { flex: 1; }
+        .btn-confirm { background: var(--pri); color: white; }
+        .btn-cancel { background: var(--border); color: var(--text); }
+        .summary-box {
+            margin-top: 20px; padding: 20px; background: var(--bg);
+            border-radius: 14px; border: 1px solid var(--border);
+            display: flex; justify-content: flex-end; align-items: center; gap: 20px; flex-wrap: wrap;
+        }
+        .summary-box span {
+            font-size: 12px; font-weight: 700; color: var(--text-light);
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .summary-box b { font-size: 20px; font-weight: 700; color: var(--acc); }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        .watermark {
+            position: fixed; bottom: 20px; right: 20px; font-size: 12px;
+            font-weight: 800; color: var(--text-light); opacity: 0.3;
+            letter-spacing: 2px; pointer-events: none; text-transform: uppercase; z-index: 999;
+        }
+        .copyright {
+            position: fixed; bottom: 45px; right: 20px; font-size: 10px;
+            font-weight: 600; color: var(--pri); opacity: 0.7;
+            letter-spacing: 1px; pointer-events: none; z-index: 999;
+        }
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .card { padding: 15px; }
+            table { font-size: 12px; }
+            td { padding: 12px 8px; }
+            .btn-sm { min-width: 75px; font-size: 8px; padding: 8px 6px; }
+            nav button { font-size: 11px; min-width: 75px; padding: 10px 6px; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <h1>Gestor de Dietas <span class="user-name" id="userName"></span></h1>
+        <nav>
+            <button data-tab="new" class="active">NUEVA</button>
+            <button data-tab="manage">GESTIÓN</button>
+            <button data-tab="history">HISTÓRICO</button>
+            <button data-tab="countries">PAÍSES</button>
+            <button data-tab="config">AJUSTES</button>
+        </nav>
+        <div class="card" id="main"></div>
+    </div>
+    <div class="copyright">© 2026 - Todos los derechos reservados</div>
+    <div class="watermark">By FP</div>
+    
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Mensaje</h2>
+            <p id="modalMessage"></p>
+            <input type="text" id="modalInput" style="display:none">
+            <div class="modal-buttons">
+                <button class="btn btn-confirm" id="modalConfirm">Aceptar</button>
+                <button class="btn btn-cancel" id="modalCancel" style="display:none">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    'use strict';
+    
+    // ===== CONFIGURACIÓN =====
+    const CONFIG = {
+        KEY: 'diet_app_v2',
+        PCT: 80,
+        COUNTRY: 'España',
+        GROUP: '3'
+    };
+    
+    const DB = {
+        "España":{g1:[102.56,53.34],g2:[65.97,37.40],g3:[48.92,28.21]},"Afganistán":{g1:[100.97,60.10],g2:[85.94,46.28],g3:[75.73,42.07]},"Albania":{g1:[116.60,54.09],g2:[99.77,46.88],g3:[87.75,42.67]},"Alemania":{g1:[155.66,68.52],g2:[132.82,59.50],g3:[117.20,56.50]},"Andorra":{g1:[54.69,44.47],g2:[46.88,37.86],g3:[41.47,34.86]},"Angola":{g1:[150.85,87.15],g2:[128.62,75.13],g3:[113.59,67.91]},"Arabia Saudita":{g1:[130.42,60.70],g2:[111.19,52.29],g3:[98.57,47.48]},"Argelia":{g1:[115.39,60.10],g2:[98.57,48.08],g3:[86.55,43.87]},"Argentina":{g1:[122.01,71.52],g2:[103.98,55.29],g3:[91.95,48.08]},"Australia":{g1:[142.44,76.33],g2:[121.40,59.50],g3:[107.58,54.09]},"Austria":{g1:[132.82,66.71],g2:[113.59,58.30],g3:[100.37,52.89]},"Bélgica":{g1:[174.29,91.35],g2:[148.45,82.94],g3:[131.02,78.73]},"Bolivia":{g1:[75.13,53.49],g2:[64.31,41.47],g3:[56.50,36.66]},"Brasil":{g1:[122.61,64.91],g2:[104.58,52.89],g3:[91.95,46.88]},"Chile":{g1:[125.61,58.30],g2:[106.98,51.69],g3:[94.36,45.08]},"China":{g1:[132.22,63.11],g2:[112.99,51.69],g3:[99.77,46.88]},"Colombia":{g1:[115.39,54.09],g2:[98.57,46.88],g3:[86.55,42.67]},"Corea del Sur":{g1:[197.13,91.35],g2:[168.28,73.32],g3:[148.45,64.91]},"Dinamarca":{g1:[179.70,87.75],g2:[153.26,76.33],g3:[135.23,71.52]},"Ecuador":{g1:[108.18,55.29],g2:[92.56,43.27],g3:[81.74,38.46]},"Egipto":{g1:[117.80,52.89],g2:[100.37,43.87],g3:[88.35,40.27]},"Estados Unidos":{g1:[215.16,91.35],g2:[183.91,79.93],g3:[162.27,71.52]},"Finlandia":{g1:[152.06,69.12],g2:[129.82,59.50],g3:[114.79,56.50]},"Francia":{g1:[141.24,76.33],g2:[120.20,68.52],g3:[106.38,62.51]},"Grecia":{g1:[111.19,54.09],g2:[95.00,46.88],g3:[84.14,42.67]},"Italia":{g1:[143.64,73.32],g2:[122.61,64.91],g3:[108.18,60.10]},"Japón":{g1:[198.33,91.35],g2:[169.48,77.53],g3:[149.65,68.52]},"México":{g1:[141.24,62.51],g2:[120.20,52.89],g3:[106.38,48.08]},"Portugal":{g1:[100.37,54.09],g2:[85.34,46.88],g3:[75.13,42.67]},"Reino Unido":{g1:[179.70,81.14],g2:[153.26,72.12],g3:[135.23,66.11]},"Rusia":{g1:[155.66,68.52],g2:[132.82,56.50],g3:[117.20,50.49]},"Suiza":{g1:[155.66,91.35],g2:[132.82,85.34],g3:[117.20,79.93]}
+    };
+    
+    // ===== STORAGE =====
+    const Storage = {
+        get(key, def = null) {
+            try {
+                const v = localStorage.getItem(key);
+                return v ? JSON.parse(v) : def;
+            } catch { return def; }
+        },
+        set(key, val) {
+            try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+            catch { return false; }
+        }
+    };
+    
+    // ===== ESTADO =====
+    let state = Storage.get(CONFIG.KEY, {
+        name: '', pct: CONFIG.PCT, records: [], dark: false,
+        pin: '', pinActive: false, lastCountry: CONFIG.COUNTRY, lastGroup: CONFIG.GROUP
+    });
+    
+    const save = () => Storage.set(CONFIG.KEY, state);
+    
+    // ===== UTILIDADES =====
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => document.querySelectorAll(s);
+    const fmt = (n) => n.toFixed(2) + '€';
+    const fmtDate = (d) => {
+        if (!d) return '---';
+        const dt = new Date(d + 'T00:00:00');
+        const day = String(dt.getDate()).padStart(2, '0');
+        const mon = String(dt.getMonth() + 1).padStart(2, '0');
+        return `${day}/${mon}/${dt.getFullYear()}`;
+    };
+    const parseDate = (d) => new Date(d + 'T00:00:00');
+    const daysBetween = (d1, d2) => Math.ceil((d2 - d1) / 86400000);
+    
+    // ===== MODAL =====
+    const Modal = {
+        show(title, msg, type = 'alert', cb = null) {
+            $('#modalTitle').textContent = title;
+            $('#modalMessage').textContent = msg;
+            const inp = $('#modalInput');
+            const cancel = $('#modalCancel');
+            
+            if (type === 'prompt') {
+                inp.style.display = 'block';
+                inp.value = '';
+                cancel.style.display = 'block';
+                setTimeout(() => inp.focus(), 100);
+            } else if (type === 'confirm') {
+                inp.style.display = 'none';
+                cancel.style.display = 'block';
+            } else {
+                inp.style.display = 'none';
+                cancel.style.display = 'none';
+            }
+            
+            $('#modal').classList.add('show');
+            
+            $('#modalConfirm').onclick = () => {
+                this.hide();
+                if (cb) cb(type === 'prompt' ? inp.value : true);
+            };
+            
+            $('#modalCancel').onclick = () => {
+                this.hide();
+                if (cb) cb(null);
+            };
+            
+            if (type === 'prompt') {
+                inp.onkeydown = (e) => { if (e.key === 'Enter') $('#modalConfirm').click(); };
+            }
+        },
+        hide() { $('#modal').classList.remove('show'); }
+    };
+    
+    // ===== CALCULADORA =====
+    const calc = (country, group, start, end, half = false) => {
+        const rates = DB[country][`g${group}`];
+        const days = daysBetween(start, end);
+        let total = 0;
+        
+        if (days === 0) {
+            total = rates[1] * 0.5;
+        } else {
+            total = days * (rates[0] + rates[1]);
+            if (half) total += rates[1] * 0.5;
+        }
+        
+        return Number(total.toFixed(2));
+    };
+    
+    // ===== NAVEGACIÓN =====
+    const navigate = (tab) => {
+        $$('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+        Views[tab]($('#main'));
+    };
+    
+    // ===== VISTAS =====
+    const Views = {
+        new(el) {
+            const today = new Date().toISOString().split('T')[0];
+            const opts = Object.keys(DB).sort().map(c => 
+                `<option value="${c}" ${c === state.lastCountry ? 'selected' : ''}>${c}</option>`
+            ).join('');
+            
+            el.innerHTML = `
+                <div class="form-grid">
+                    <div class="field">
+                        <label>Fecha Inicio</label>
+                        <input type="date" id="f1" value="${today}">
+                    </div>
+                    <div class="field">
+                        <label>Fecha Fin</label>
+                        <input type="date" id="f2" value="${today}">
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="field">
+                        <label>País Destino</label>
+                        <select id="country">${opts}</select>
+                    </div>
+                    <div class="field">
+                        <label>Grupo Personal</label>
+                        <select id="group">
+                            <option value="1" ${state.lastGroup==='1'?'selected':''}>Grupo 1</option>
+                            <option value="2" ${state.lastGroup==='2'?'selected':''}>Grupo 2</option>
+                            <option value="3" ${state.lastGroup==='3'?'selected':''}>Grupo 3</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="check-item" id="chk1">
+                    <div class="check-info">
+                        <b>Media manutención último día</b>
+                        <span>Llegada después de las 14h</span>
+                    </div>
+                    <input type="checkbox" id="half">
+                </div>
+                <div class="check-item" id="chk2">
+                    <div class="check-info">
+                        <b>Solicitado anticipo</b>
+                        <span>${state.pct}% del total</span>
+                    </div>
+                    <input type="checkbox" id="adv">
+                </div>
+                <button class="btn btn-primary" id="btnSave">Registrar Comisión</button>
+            `;
+            
+            $('#chk1').onclick = (e) => { if (e.target.id !== 'half') $('#half').checked = !$('#half').checked; };
+            $('#chk2').onclick = (e) => { if (e.target.id !== 'adv') $('#adv').checked = !$('#adv').checked; };
+            $('#btnSave').onclick = () => {
+                const d1 = parseDate($('#f1').value);
+                const d2 = parseDate($('#f2').value);
+                
+                if (d2 < d1) {
+                    Modal.show('Error', 'La fecha de fin no puede ser anterior a la de inicio');
+                    return;
+                }
+                
+                const overlap = state.records.some(r => {
+                    const ri = parseDate(r.ini);
+                    const rf = parseDate(r.fin);
+                    return d1 <= rf && d2 >= ri;
+                });
+                
+                if (overlap) Modal.show('Aviso', 'Esta comisión coincide con otra ya registrada');
+                
+                const country = $('#country').value;
+                const group = $('#group').value;
+                const total = calc(country, group, d1, d2, $('#half').checked);
+                const adv = $('#adv').checked ? (total * state.pct / 100) : 0;
+                
+                state.lastCountry = country;
+                state.lastGroup = group;
+                state.records.push({
+                    id: Date.now(),
+                    ini: $('#f1').value,
+                    fin: $('#f2').value,
+                    pais: country,
+                    total: total,
+                    antCalculado: adv,
+                    status: 'pendiente',
+                    fAnt: null,
+                    fLiq: null
+                });
+                save();
+                navigate('manage');
+            };
+        },
+        
+        manage(el) {
+            const recs = state.records.filter(r => r.status !== 'liquidado');
+            
+            if (!recs.length) {
+                el.innerHTML = '<div class="empty">Sin gestiones pendientes</div>';
+                return;
+            }
+            
+            const rows = recs.map(r => {
+                const ap = r.fAnt ? r.antCalculado : 0;
+                return `
+                    <tr>
+                        <td class="left">
+                            <div class="cell-title">${r.pais.toUpperCase()}</div>
+                            <div class="cell-sub">${fmtDate(r.ini)} - ${fmtDate(r.fin)}</div>
+                        </td>
+                        <td><strong>${fmt(r.antCalculado)}</strong></td>
+                        <td><strong>${fmt(r.total - ap)}</strong></td>
+                        <td><strong>${fmt(r.total)}</strong></td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm ${r.fAnt?'active':''}" data-a="c" data-i="${r.id}">
+                                    ${r.fAnt?'COBRADO':'ANTICIPO'}
+                                </button>
+                                <button class="btn btn-sm ${r.status==='autorizado'?'active':''}" data-a="a" data-i="${r.id}">
+                                    ${r.status==='autorizado'?'AUTORIZADO':'AUTORIZAR'}
+                                </button>
+                                <button class="btn btn-sm" data-a="l" data-i="${r.id}" ${r.status!=='autorizado'?'disabled':''}>
+                                    LIQUIDAR
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            el.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="left">Destino/Fechas</th>
+                            <th>Anticipos</th>
+                            <th>Pendiente</th>
+                            <th>Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+            
+            $$('[data-a]').forEach(b => b.onclick = () => {
+                const id = parseInt(b.dataset.i);
+                const r = state.records.find(x => x.id === id);
+                if (!r) return;
+                
+                if (b.dataset.a === 'c' && r.antCalculado > 0) {
+                    r.fAnt = r.fAnt ? null : new Date().toISOString();
+                } else if (b.dataset.a === 'a') {
+                    r.status = r.status === 'autorizado' ? 'pendiente' : 'autorizado';
+                } else if (b.dataset.a === 'l') {
+                    r.status = 'liquidado';
+                    r.fLiq = new Date().toISOString();
+                }
+                save();
+                navigate('manage');
+            });
+        },
+        
+        history(el) {
+            const recs = state.records.filter(r => r.status === 'liquidado');
+            const total = recs.reduce((s, r) => s + r.total, 0);
+            
+            if (!recs.length) {
+                el.innerHTML = '<div class="empty">Historial vacío</div>';
+                return;
+            }
+            
+            const rows = recs.map(r => `
+                <tr>
+                    <td class="left">
+                        <div class="cell-title">${r.pais.toUpperCase()}</div>
+                        <div class="cell-sub">${fmtDate(r.ini)} - ${fmtDate(r.fin)}</div>
+                    </td>
+                    <td>${fmt(r.antCalculado)}</td>
+                    <td>${fmt(r.total - r.antCalculado)}</td>
+                    <td><strong>${fmt(r.total)}</strong></td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" data-del="${r.id}">BORRAR</button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            el.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="left">Destino/Fechas</th>
+                            <th>Anticipos</th>
+                            <th>Restante</th>
+                            <th>Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div class="summary-box">
+                    <span>Total Cobrado:</span>
+                    <b>${fmt(total)}</b>
+                </div>
+            `;
+            
+            $$('[data-del]').forEach(b => b.onclick = () => {
+                Modal.show('Confirmar', '¿Eliminar este registro?', 'confirm', (ok) => {
+                    if (ok) {
+                        state.records = state.records.filter(r => r.id !== parseInt(b.dataset.del));
+                        save();
+                        navigate('history');
+                    }
+                });
+            });
+        },
+        
+        countries(el) {
+            el.innerHTML = `
+                <div class="field">
+                    <label>Buscar país</label>
+                    <input type="text" id="search" placeholder="🔍 Escribe el nombre...">
+                </div>
+                <div id="tbl"></div>
+            `;
+            
+            const filter = () => {
+                const q = $('#search').value.toLowerCase();
+                const cts = Object.entries(DB).sort();
+                const filtered = q ? cts.filter(([n]) => n.toLowerCase().includes(q)) : cts;
+                
+                const rows = filtered.flatMap(([n, v]) => 
+                    [1,2,3].map(g => {
+                        const r = v[`g${g}`];
+                        const t = r[0] + r[1];
+                        return `
+                            <tr>
+                                <td class="left"><strong style="${g!==1?'opacity:0':''}">${n}</strong></td>
+                                <td>G${g}</td>
+                                <td>${fmt(r[0])}</td>
+                                <td>${fmt(r[1])}</td>
+                                <td><strong style="color:var(--pri)">${fmt(t)}</strong></td>
+                            </tr>
+                        `;
+                    })
+                ).join('');
+                
+                $('#tbl').innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="left">País</th>
+                                <th>Grupo</th>
+                                <th>Alojamiento</th>
+                                <th>Manutención</th>
+                                <th>Total Día</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            };
+            
+            let timeout;
+            $('#search').oninput = () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(filter, 300);
+            };
+            filter();
+        },
+        
+        config(el) {
+            el.innerHTML = `
+                <div class="form-grid">
+                    <div class="field">
+                        <label>Nombre</label>
+                        <input type="text" id="cname" value="${state.name}" placeholder="Tu nombre">
+                    </div>
+                    <div class="field">
+                        <label>PIN (4 dígitos)</label>
+                        <input type="password" id="cpin" maxlength="4" value="${state.pin}" placeholder="0000">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>% Anticipo por Defecto</label>
+                    <input type="number" id="cpct" min="0" max="100" value="${state.pct}">
+                </div>
+                <div class="check-item" id="chkPin">
+                    <div class="check-info">
+                        <b>PIN al iniciar</b>
+                        <span>Protección de acceso</span>
+                    </div>
+                    <input type="checkbox" id="pinAct" ${state.pinActive?'checked':''}>
+                </div>
+                <div class="check-item" id="chkDark">
+                    <div class="check-info">
+                        <b>Modo Oscuro</b>
+                        <span>Cambiar estética</span>
+                    </div>
+                    <input type="checkbox" id="dark" ${state.dark?'checked':''}>
+                </div>
+                <button class="btn btn-primary" id="btnCfg">Guardar y Refrescar</button>
+            `;
+            
+            $('#chkPin').onclick = (e) => { if (e.target.id !== 'pinAct') $('#pinAct').checked = !$('#pinAct').checked; };
+            $('#chkDark').onclick = (e) => {
+                if (e.target.id !== 'dark') $('#dark').checked = !$('#dark').checked;
+                document.body.classList.toggle('dark', $('#dark').checked);
+            };
+            
+            $('#btnCfg').onclick = () => {
+                const pct = parseInt($('#cpct').value);
+                
+                const doSave = () => {
+                    state.name = $('#cname').value.trim();
+                    state.pin = $('#cpin').value;
+                    state.pct = pct;
+                    state.pinActive = $('#pinAct').checked;
+                    state.dark = $('#dark').checked;
+                    save();
+                    location.reload();
+                };
+                
+                if (pct !== 80) {
+                    Modal.show('Aviso', 'Lo habitual es solicitar el 80%', 'alert', doSave);
+                } else {
+                    doSave();
+                }
+            };
+        }
+    };
+    
+    // ===== INIT =====
+    $$('nav button').forEach(b => b.onclick = () => navigate(b.dataset.tab));
+    
+    if (state.dark) document.body.classList.add('dark');
+    if (state.name) $('#userName').textContent = '| ' + state.name;
+    
+    if (state.pinActive && state.pin) {
+        Modal.show('Acceso', 'Introduce tu PIN:', 'prompt', (pin) => {
+            if (pin === state.pin) {
+                navigate('new');
+            } else {
+                Modal.show('Error', 'PIN Incorrecto', 'alert', () => {
+                    document.body.innerHTML = '<div style="text-align:center;padding:50px;font-size:20px;color:var(--err)">Acceso denegado</div>';
+                });
+            }
+        });
+    } else {
+        navigate('new');
+    }
+    </script>
+</body>
+</html>
