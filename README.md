@@ -40,7 +40,7 @@
 
 ### Demo Online
 
-🌐 **Prueba la aplicación aquí:** [https://TU_USUARIO.github.io/gestor-dietas](https://TU_USUARIO.github.io/gestor-dietas)
+🌐 **Prueba la aplicación aquí:** [https://joseyluisfdez-maker.github.io/gestor-dietas](https://joseyluisfdez-maker.github.io/gestor-dieta)
 
 *(Reemplaza con tu URL real después de activar GitHub Pages)*
 
