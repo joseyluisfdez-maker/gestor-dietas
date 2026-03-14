@@ -165,14 +165,111 @@
             letter-spacing: 1px; pointer-events: none; z-index: 999;
         }
         @media (max-width: 768px) {
-            body { padding: 12px; }
-            .card { padding: 15px; }
-            table { font-size: 12px; }
-            td { padding: 12px 8px; }
-            .btn-sm { min-width: 75px; font-size: 8px; padding: 8px 6px; }
-            nav button { font-size: 11px; min-width: 75px; padding: 10px 6px; }
-            .form-grid { grid-template-columns: 1fr; }
+            body { padding: 15px; font-size: 16px; }
+            .app { padding-bottom: 120px; }
+            h1 { font-size: 22px; margin-bottom: 18px; }
+            .card { padding: 18px; min-height: auto; }
+            
+            /* Navegación más grande */
+            nav { gap: 10px; padding: 6px; margin-bottom: 18px; }
+            nav button { 
+                font-size: 14px; 
+                min-width: 90px; 
+                padding: 14px 10px;
+                font-weight: 700;
+            }
+            
+            /* Formularios más grandes */
+            .field label { font-size: 13px; margin-bottom: 10px; }
+            input, select, textarea { 
+                padding: 16px; 
+                font-size: 16px;
+                border-radius: 14px;
+            }
+            
+            /* Checkboxes más grandes */
+            .check-item { padding: 20px 0; }
+            .check-info b { font-size: 16px; }
+            .check-info span { font-size: 14px; }
+            input[type="checkbox"] { width: 26px; height: 26px; }
+            
+            /* Botones más grandes */
+            .btn-primary { 
+                padding: 20px; 
+                font-size: 17px; 
+                margin-top: 25px;
+                border-radius: 16px;
+            }
+            .btn-sm { 
+                min-width: 90px; 
+                font-size: 11px; 
+                padding: 12px 10px;
+                font-weight: 700;
+            }
+            
+            /* Tablas más grandes */
+            table { font-size: 14px; }
+            th { font-size: 12px; padding: 14px 10px; }
+            td { padding: 16px 10px; font-size: 14px; }
+            
+            /* Textos en celdas de tabla más grandes */
+            td div[style*="font-size:14px"] { font-size: 16px !important; }
+            td div[style*="font-size:11px"] { font-size: 13px !important; }
+            
+            /* Botón OBS en tablas */
+            button[style*="font-size:9px"] { 
+                font-size: 11px !important; 
+                padding: 8px 12px !important;
+            }
+            
+            /* Summary box más grande */
+            .summary-box { 
+                padding: 20px; 
+                gap: 15px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .summary-box span { font-size: 14px; }
+            .summary-box b { font-size: 24px; }
+            .summary-box div[style*="display:flex"] { width: 100%; }
+            
+            /* Modal más grande */
+            .modal-content { padding: 35px; max-width: 90%; }
+            .modal h2 { font-size: 22px; margin-bottom: 18px; }
+            .modal p { font-size: 16px; margin-bottom: 22px; line-height: 1.6; }
+            .modal input { padding: 16px; font-size: 16px; }
+            .modal-buttons .btn { padding: 16px 24px; font-size: 15px; }
+            
+            /* Ajustes - Warning box */
+            div[style*="background:#fff3cd"] p { font-size: 14px !important; }
+            div[style*="background:#fff3cd"] strong { font-size: 15px; }
+            
+            /* Ajustes - Backup section */
+            h3[style*="font-size:15px"] { font-size: 17px !important; }
+            p[style*="font-size:12px"] { font-size: 14px !important; }
+            button[style*="font-size:13px"] { 
+                font-size: 15px !important; 
+                padding: 16px !important;
+            }
+            
+            /* Grid a una columna */
+            .form-grid { grid-template-columns: 1fr; gap: 18px; }
+            
+            /* Copyright más pequeño y arriba en móvil */
+            .copyright { 
+                font-size: 8px; 
+                bottom: 90px; 
+                right: 15px; 
+                opacity: 0.4;
+            }
+            .watermark { 
+                font-size: 9px; 
+                bottom: 70px; 
+                right: 15px; 
+                opacity: 0.25;
+            }
         }
+    </style>
     </style>
 </head>
 <body>
@@ -187,7 +284,6 @@
         </nav>
         <div class="card" id="main"></div>
     </div>
-    <div class="copyright">© 2026 - Todos los derechos reservados</div>
     <div class="watermark">By FP</div>
     
     <div id="modal" class="modal">
@@ -493,6 +589,13 @@
         history(el) {
             const recs = state.records.filter(r => r.status === 'liquidado');
             const total = recs.reduce((s, r) => s + r.total, 0);
+            const totalDias = recs.reduce((s, r) => {
+                const d1 = parseDate(r.ini);
+                const d2 = parseDate(r.fin);
+                const dias = daysBetween(d1, d2);
+                // Si es mismo día = 1 día, si es diferencia de 1 = 2 días, etc.
+                return s + (dias === 0 ? 1 : dias + 1);
+            }, 0);
             
             if (!recs.length) {
                 el.innerHTML = '<div class="empty">Historial vacío</div>';
@@ -529,8 +632,14 @@
                     <tbody>${rows}</tbody>
                 </table>
                 <div class="summary-box">
-                    <span>Total Cobrado:</span>
-                    <b>${fmt(total)}</b>
+                    <div style="display:flex;align-items:center;gap:20px;">
+                        <span>Días de Viaje:</span>
+                        <b style="color:var(--pri);">${totalDias}</b>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:20px;">
+                        <span>Total Cobrado:</span>
+                        <b>${fmt(total)}</b>
+                    </div>
                 </div>
             `;
             
@@ -543,11 +652,31 @@
             });
             
             $$('[data-del]').forEach(b => b.onclick = () => {
-                Modal.show('Confirmar', '¿Eliminar este registro?', 'confirm', (ok) => {
+                // Exportación automática de seguridad antes de borrar
+                const autoBackup = () => {
+                    const data = {
+                        version: '2.0',
+                        exportDate: new Date().toISOString(),
+                        appName: 'Gestor de Dietas Pro - Auto Backup',
+                        data: state
+                    };
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `dietas-auto-backup-${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                };
+                
+                Modal.show('Confirmar', '¿Eliminar este registro? Se creará un backup automático antes de borrarlo.', 'confirm', (ok) => {
                     if (ok) {
-                        state.records = state.records.filter(r => r.id !== parseInt(b.dataset.del));
-                        save();
-                        navigate('history');
+                        autoBackup();
+                        setTimeout(() => {
+                            state.records = state.records.filter(r => r.id !== parseInt(b.dataset.del));
+                            save();
+                            navigate('history');
+                        }, 500);
                     }
                 });
             });
@@ -608,7 +737,36 @@
         },
         
         config(el) {
+            const totalRecords = state.records.length;
+            const lastBackup = localStorage.getItem('last_backup_date');
+            
             el.innerHTML = `
+                <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:12px;padding:15px;margin-bottom:20px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                        <span style="font-size:20px;">⚠️</span>
+                        <strong style="color:#856404;">IMPORTANTE: Protege tus datos</strong>
+                    </div>
+                    <p style="font-size:13px;color:#856404;line-height:1.5;margin:0;">
+                        Tus datos están guardados solo en este dispositivo. Si borras el caché del navegador o desinstalas la app, <strong>perderás toda la información</strong>. Exporta tus datos regularmente como medida de seguridad.
+                    </p>
+                </div>
+                
+                <div style="background:var(--bg);border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid var(--border);">
+                    <h3 style="margin:0 0 15px 0;font-size:15px;color:var(--pri);">📦 Copia de Seguridad</h3>
+                    <p style="font-size:12px;color:var(--text-light);margin-bottom:15px;">
+                        ${totalRecords} comisiones registradas | ${lastBackup ? 'Última copia: ' + new Date(lastBackup).toLocaleDateString('es-ES') : 'Sin copias previas'}
+                    </p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        <button class="btn" id="btnExport" style="background:var(--acc);color:white;padding:14px;border-radius:10px;font-size:13px;font-weight:700;border:0;cursor:pointer;">
+                            📥 EXPORTAR DATOS
+                        </button>
+                        <button class="btn" id="btnImport" style="background:var(--pri);color:white;padding:14px;border-radius:10px;font-size:13px;font-weight:700;border:0;cursor:pointer;">
+                            📤 IMPORTAR DATOS
+                        </button>
+                    </div>
+                    <input type="file" id="fileImport" accept=".json" style="display:none;">
+                </div>
+                
                 <div class="form-grid">
                     <div class="field">
                         <label>Nombre</label>
@@ -639,6 +797,62 @@
                 </div>
                 <button class="btn btn-primary" id="btnCfg">Guardar y Refrescar</button>
             `;
+            
+            // EXPORTAR DATOS
+            $('#btnExport').onclick = () => {
+                const data = {
+                    version: '2.0',
+                    exportDate: new Date().toISOString(),
+                    appName: 'Gestor de Dietas Pro',
+                    data: state
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `dietas-backup-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                localStorage.setItem('last_backup_date', new Date().toISOString());
+                Modal.show('✅ Exportado', 'Tus datos se han descargado correctamente. Guarda el archivo en un lugar seguro.');
+            };
+            
+            // IMPORTAR DATOS
+            $('#btnImport').onclick = () => {
+                $('#fileImport').click();
+            };
+            
+            $('#fileImport').onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        
+                        if (!imported.data || !imported.data.records) {
+                            Modal.show('❌ Error', 'El archivo no es un backup válido de Gestor de Dietas Pro');
+                            return;
+                        }
+                        
+                        Modal.show('⚠️ Confirmar', '¿Reemplazar todos los datos actuales con el backup? Esta acción no se puede deshacer.', 'confirm', (ok) => {
+                            if (ok) {
+                                state = imported.data;
+                                save();
+                                Modal.show('✅ Importado', `Se han restaurado ${state.records.length} comisiones correctamente.`, 'alert', () => {
+                                    location.reload();
+                                });
+                            }
+                        });
+                    } catch (err) {
+                        Modal.show('❌ Error', 'No se pudo leer el archivo. Asegúrate de que es un backup válido.');
+                    }
+                };
+                reader.readAsText(file);
+            };
             
             $('#chkPin').onclick = (e) => { if (e.target.id !== 'pinAct') $('#pinAct').checked = !$('#pinAct').checked; };
             $('#chkDark').onclick = (e) => {
